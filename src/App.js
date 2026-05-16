@@ -172,6 +172,7 @@ function App() {
 
         <p className="copyright-line">
           &copy; 2026 DevJoint - Bütün hüquqlar qorunur.
+          
         </p>
       </footer>
     </div>
