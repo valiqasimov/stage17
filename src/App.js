@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaInstagram, FaLinkedin } from "react-icons/fa";
 import "./App.css";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -157,7 +158,7 @@ function App() {
         <div className="partners-footer-inner">
           <div className="partners-label">TƏRƏFDAŞLAR</div>
           <div className="partners-grid">
-            <div className="partner-logo">Mareza Parfum</div>
+            <div className="partner-logo">Mereza Parfum</div>
             <div className="partner-logo">AZMİU</div>
             <div className="partner-logo">DevJoint</div>
           </div>
