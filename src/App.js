@@ -78,6 +78,15 @@ function App() {
               <span className="cta-icon">📷</span>
               Visual Creator Proqramı
             </a>
+            <a
+              href="https://forms.gle/4dM9FWwncHNx5Np36"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary cta-button"
+            >
+              <span className="cta-icon">📚</span>
+              "İnkişaf" Forum Qeydiyyatı
+            </a>
           </div>
         </div>
       </header>
@@ -132,6 +141,10 @@ function App() {
             <div className="card">
               <h3>Fatimə Əliyeva</h3>
               <p>Baş kordinator</p>
+            </div>
+            <div className="card">
+              <h3>Ləman Abdullayeva</h3>
+              <p>Event kordinator</p>
             </div>
           </div>
         </div>
