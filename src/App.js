@@ -203,6 +203,7 @@ function App() {
           &copy; 2026 DevJoint - Bütün hüquqlar qorunur.
         </p>
       </footer>
+      <Analytics />
     </div>
   );
 }
