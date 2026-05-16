@@ -192,6 +192,7 @@ function App() {
           
         </p>
       </footer>
+      <Analytics />
     </div>
   );
 }
