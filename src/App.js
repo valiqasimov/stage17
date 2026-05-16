@@ -136,17 +136,29 @@ function App() {
           <h2>KOMANDA VƏ SPİKERLƏR</h2>
           <div className="grid-container">
             <div className="card">
-              <img src="/yaqub.jpeg" alt="Yaqub Əmiraslanov" className="card-image" />
+              <img
+                src="/yaqub.jpeg"
+                alt="Yaqub Əmiraslanov"
+                className="card-image"
+              />
               <h3>Yaqub Əmiraslanov</h3>
               <p>Təsisçi</p>
             </div>
             <div className="card">
-              <img src="/fatime.jpeg" alt="Fatimə Əliyeva" className="card-image" />
+              <img
+                src="/fatime.jpeg"
+                alt="Fatimə Əliyeva"
+                className="card-image"
+              />
               <h3>Fatimə Əliyeva</h3>
               <p>Baş kordinator</p>
             </div>
             <div className="card">
-              <img src="/leman.jpeg" alt="Ləman Abdullayeva" className="card-image" />
+              <img
+                src="/leman.jpeg"
+                alt="Ləman Abdullayeva"
+                className="card-image"
+              />
               <h3>Ləman Abdullayeva</h3>
               <p>Event kordinator</p>
             </div>
@@ -159,8 +171,8 @@ function App() {
           <div className="partners-label">TƏRƏFDAŞLAR</div>
           <div className="partners-grid">
             <div className="partner-logo">Mereza Parfum</div>
-            <div className="partner-logo">AZMİU</div>
             <div className="partner-logo">DevJoint</div>
+            <div className="partner-logo">AZMİU</div>
           </div>
         </div>
 
@@ -189,7 +201,6 @@ function App() {
 
         <p className="copyright-line">
           &copy; 2026 DevJoint - Bütün hüquqlar qorunur.
-          
         </p>
       </footer>
     </div>
