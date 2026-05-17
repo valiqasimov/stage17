@@ -162,6 +162,15 @@ function App() {
               <h3>Ləman Abdullayeva</h3>
               <p>Event kordinator</p>
             </div>
+            <div className="card">
+              <img
+                src="/huseyn.png"
+                alt="Hüseyn Hüseynov"
+                className="card-image"
+              />
+              <h3>Hüseyn Hüseynov</h3>
+              <p>Web Developer</p>
+            </div>
           </div>
         </div>
       </section>
