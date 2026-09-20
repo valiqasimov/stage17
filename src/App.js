@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaInstagram, FaLinkedin } from "react-icons/fa";
 import "./App.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const heroRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +35,58 @@ function App() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const revealEls = document.querySelectorAll(".reveal");
+
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      revealEls.forEach((el) => el.classList.add("is-visible"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+    );
+
+    revealEls.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
+
+    let frame = 0;
+    const handlePointer = (e) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 2;
+        const y = (e.clientY / window.innerHeight - 0.5) * 2;
+        hero.style.setProperty("--pointer-x", x.toFixed(3));
+        hero.style.setProperty("--pointer-y", y.toFixed(3));
+      });
+    };
+
+    window.addEventListener("pointermove", handlePointer);
+    return () => {
+      window.removeEventListener("pointermove", handlePointer);
+      cancelAnimationFrame(frame);
     };
   }, []);
 
@@ -85,7 +138,12 @@ function App() {
         </div>
       </nav>
 
-      <header className="hero">
+      <header className="hero" ref={heroRef}>
+        <div className="hero-orbs" aria-hidden="true">
+          <span className="hero-orb hero-orb-1" />
+          <span className="hero-orb hero-orb-2" />
+          <span className="hero-orb hero-orb-3" />
+        </div>
         <div className="hero-content">
           <h1 className="animate-slide-up">GƏNCLƏRİN İNKİŞAF PLATFORMASI</h1>
           <p className="animate-slide-up delay-1">
@@ -126,34 +184,34 @@ function App() {
 
       <section id="about" className="content-section content-section-dark">
         <div className="content-section-inner">
-          <h2>BİZ KİMİK?</h2>
+          <h2 className="reveal">BİZ KİMİK?</h2>
           <div className="about-text-block">
-            <p>
+            <p className="reveal">
               Stage17 — sadəcə arxa sıralarda əyləşib kimisə dinləyəcəyin
               sıradan bir tədbir deyil.
             </p>
-            <p>
+            <p className="reveal">
               Biz, gənclərin şəxsi və peşəkar inkişafını dəstəkləyən, fərqli
               baxış bucaqlarının kəsişdiyi canlı bir çıxış və müzakirə
               platformasıyıq.
             </p>
-            <p>
+            <p className="reveal">
               Əsas məqsədimiz sənin yalnız dinləyici kimi qalmağını deyil, öz
               fikirlərini cəsarətlə ifadə edən, səhnədə parlayan və cəmiyyətdə
               fərqlənən birinə çevrilməyini təmin etməkdir.
             </p>
             <ul>
-              <li>
+              <li className="reveal" style={{ "--reveal-delay": "0.05s" }}>
                 <strong>Real Təcrübələr və Fərqli Vizyon:</strong> Sahəsinin
                 peşəkarları ilə bir araya gəlib, mühazirələrdən kənar,
                 dünyagörüşünü genişləndirəcək interaktiv panellər və çıxışlar.
               </li>
-              <li>
+              <li className="reveal" style={{ "--reveal-delay": "0.18s" }}>
                 <strong>Güclü Networkinq Mühiti:</strong> Sənin kimi inkişafa
                 meyilli gənclərlə əhatə olunacaq, bəlkə də gələcək layihələrin
                 üçün ən yaxşı komanda yoldaşlarını məhz burada tapacaqsan.
               </li>
-              <li>
+              <li className="reveal" style={{ "--reveal-delay": "0.31s" }}>
                 <strong>Səhnə Şansı:</strong> Stage17 sadəcə izləmək üçün deyil;
                 burada qazandığın bilik və əlaqələrlə gələcəkdə o səhnədə çıxış
                 edən sən özün ola bilərsən.
@@ -165,41 +223,53 @@ function App() {
 
       <section id="speakers" className="content-section content-section-light">
         <div className="content-section-inner">
-          <h2>KOMANDA VƏ SPİKERLƏR</h2>
+          <h2 className="reveal">KOMANDA VƏ SPİKERLƏR</h2>
           <div className="grid-container">
-            <div className="card">
-              <img
-                src="/yaqub.jpeg"
-                alt="Yaqub Əmiraslanov"
-                className="card-image"
-              />
+            <div className="card reveal" style={{ "--reveal-delay": "0.05s" }}>
+              <div className="card-image-wrap">
+                <img
+                  src="/yaqub.jpeg"
+                  alt="Yaqub Əmiraslanov"
+                  className="card-image"
+                  loading="lazy"
+                />
+              </div>
               <h3>Yaqub Əmiraslanov</h3>
               <p>Təsisçi</p>
             </div>
-            <div className="card">
-              <img
-                src="/fatime.jpeg"
-                alt="Fatimə Əliyeva"
-                className="card-image"
-              />
+            <div className="card reveal" style={{ "--reveal-delay": "0.16s" }}>
+              <div className="card-image-wrap">
+                <img
+                  src="/fatime.jpeg"
+                  alt="Fatimə Əliyeva"
+                  className="card-image"
+                  loading="lazy"
+                />
+              </div>
               <h3>Fatimə Əliyeva</h3>
               <p>Baş kordinator</p>
             </div>
-            <div className="card">
-              <img
-                src="/leman.jpeg"
-                alt="Ləman Abdullayeva"
-                className="card-image"
-              />
+            <div className="card reveal" style={{ "--reveal-delay": "0.27s" }}>
+              <div className="card-image-wrap">
+                <img
+                  src="/leman.jpeg"
+                  alt="Ləman Abdullayeva"
+                  className="card-image"
+                  loading="lazy"
+                />
+              </div>
               <h3>Ləman Abdullayeva</h3>
               <p>Event kordinator</p>
             </div>
-            <div className="card">
-              <img
-                src="/huseyn.png"
-                alt="Hüseyn Hüseynov"
-                className="card-image"
-              />
+            <div className="card reveal" style={{ "--reveal-delay": "0.38s" }}>
+              <div className="card-image-wrap">
+                <img
+                  src="/huseyn.png"
+                  alt="Hüseyn Hüseynov"
+                  className="card-image"
+                  loading="lazy"
+                />
+              </div>
               <h3>Hüseyn Hüseynov</h3>
               <p>Web Developer</p>
             </div>
@@ -209,11 +279,17 @@ function App() {
 
       <footer className="partners-footer" id="partners">
         <div className="partners-footer-inner">
-          <div className="partners-label">TƏRƏFDAŞLAR</div>
+          <div className="partners-label reveal">TƏRƏFDAŞLAR</div>
           <div className="partners-grid">
-            <div className="partner-logo">Mereza Parfum</div>
-            <div className="partner-logo">DevJoint</div>
-            <div className="partner-logo">AZMİU</div>
+            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.05s" }}>
+              Mereza Parfum
+            </div>
+            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.15s" }}>
+              DevJoint
+            </div>
+            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.25s" }}>
+              AZMİU
+            </div>
           </div>
         </div>
 
