@@ -156,7 +156,10 @@ function GalleryTile({ image, index, onOpen }) {
 
 /* Lightbox modal with prev/next navigation */
 function Lightbox({ images, index, onClose, onPrev, onNext }) {
+  const isOpen = index !== null;
+
   useEffect(() => {
+    if (!isOpen) return undefined;
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowLeft") onPrev();
@@ -168,9 +171,9 @@ function Lightbox({ images, index, onClose, onPrev, onNext }) {
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "";
     };
-  }, [onClose, onPrev, onNext]);
+  }, [isOpen, onClose, onPrev, onNext]);
 
-  if (index === null) return null;
+  if (!isOpen) return null;
   const image = images[index];
 
   return (
