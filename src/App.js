@@ -7,6 +7,10 @@ import {
   FaMicrophoneAlt,
   FaChevronDown,
   FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTimes,
+  FaCamera,
 } from "react-icons/fa";
 import "./App.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -90,6 +94,14 @@ const FAQS = [
     a: "Stage17 — gənclərin şəxsi və peşəkar inkişafını dəstəkləyən canlı çıxış və müzakirə platformasıdır. Burada sahəsinin peşəkarları ilə bir araya gəlir, networking qurur və öz səhnə şansını qazanırsan.",
   },
   {
+    q: "İştirak ödənişlidir?",
+    a: "Xeyr, hazırda iştirak tamamilə pulsuzdur. Sadəcə onlayn qeydiyyatdan keçmək kifayətdir.",
+  },
+  {
+    q: "Tədbirlər harada keçirilir?",
+    a: "Tədbirlərimiz Bakıda keçirilir. Dəqiq məkan və tarix hər tədbirdən əvvəl qeydiyyatdan keçən iştirakçılara və sosial media hesablarımızda elan olunur.",
+  },
+  {
     q: "Tədbirə necə qeydiyyatdan keçə bilərəm?",
     a: "Yuxarıdakı “Üzvlük Qeydiyyatı” və “İnkişaf Forum Qeydiyyatı” düymələri vasitəsilə onlayn formu doldurmaqla bir neçə dəqiqəyə qeydiyyatdan keçə bilərsən.",
   },
@@ -97,14 +109,111 @@ const FAQS = [
     q: "Kimlər iştirak edə bilər?",
     a: "İnkişafa meyilli bütün gənclər — tələbələr, yeni başlayanlar və öz sahəsində irəliləmək istəyənlər. Təcrübə tələb olunmur, sadəcə iştirak etmək istəyin kifayətdir.",
   },
-  {
-    q: "İştirakdan nə əldə edəcəm?",
-    a: "Real təcrübələr, güclü networking mühiti, fərqli baxış bucaqları və gələcəkdə özünün də səhnədə çıxış edə biləcəyin bir platforma.",
-  },
 ];
+
+/* Keçmiş tədbirlərdən şəkillər — faylları public/gallery/ qovluğuna əlavə et */
+const GALLERY = [
+  { src: "/gallery/event-1.jpg", alt: "Stage17 tədbirindən an" },
+  { src: "/gallery/event-2.jpg", alt: "Stage17 tədbirindən an" },
+  { src: "/gallery/event-3.jpg", alt: "Stage17 tədbirindən an" },
+  { src: "/gallery/event-4.jpg", alt: "Stage17 tədbirindən an" },
+  { src: "/gallery/event-5.jpg", alt: "Stage17 tədbirindən an" },
+  { src: "/gallery/event-6.jpg", alt: "Stage17 tədbirindən an" },
+];
+
+/* Single gallery tile — falls back to a styled placeholder if the image is missing */
+function GalleryTile({ image, index, onOpen }) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <button
+      type="button"
+      className={`gallery-item reveal ${failed ? "is-placeholder" : ""}`}
+      style={{ "--reveal-delay": `${(index % 3) * 0.1}s` }}
+      onClick={() => !failed && onOpen(index)}
+      aria-label={image.alt}
+    >
+      {failed ? (
+        <span className="gallery-placeholder">
+          <FaCamera />
+        </span>
+      ) : (
+        <>
+          <img
+            src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            onError={() => setFailed(true)}
+          />
+          <span className="gallery-overlay">
+            <FaInstagram />
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
+/* Lightbox modal with prev/next navigation */
+function Lightbox({ images, index, onClose, onPrev, onNext }) {
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose, onPrev, onNext]);
+
+  if (index === null) return null;
+  const image = images[index];
+
+  return (
+    <div className="lightbox" onClick={onClose} role="dialog" aria-modal="true">
+      <button className="lightbox-close" aria-label="Bağla" onClick={onClose}>
+        <FaTimes />
+      </button>
+      <button
+        className="lightbox-nav lightbox-prev"
+        aria-label="Əvvəlki"
+        onClick={(e) => {
+          e.stopPropagation();
+          onPrev();
+        }}
+      >
+        <FaChevronLeft />
+      </button>
+      <img
+        className="lightbox-img"
+        src={image.src}
+        alt={image.alt}
+        onClick={(e) => e.stopPropagation()}
+      />
+      <button
+        className="lightbox-nav lightbox-next"
+        aria-label="Növbəti"
+        onClick={(e) => {
+          e.stopPropagation();
+          onNext();
+        }}
+      >
+        <FaChevronRight />
+      </button>
+      <span className="lightbox-counter">
+        {index + 1} / {images.length}
+      </span>
+    </div>
+  );
+}
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const heroRef = useRef(null);
@@ -183,6 +292,17 @@ function App() {
     }
   }, []);
 
+  const openLightbox = useCallback((i) => setLightboxIndex(i), []);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const prevImage = useCallback(
+    () => setLightboxIndex((i) => (i - 1 + GALLERY.length) % GALLERY.length),
+    []
+  );
+  const nextImage = useCallback(
+    () => setLightboxIndex((i) => (i + 1) % GALLERY.length),
+    []
+  );
+
   return (
     <div className="App" id="top">
       <nav className={`navbar ${isScrolled ? "scrolled" : ""}`} id="navbar">
@@ -212,6 +332,9 @@ function App() {
           </a>
           <a href="#speakers" onClick={(e) => scrollToSection(e, "speakers")}>
             KOMANDA
+          </a>
+          <a href="#gallery" onClick={(e) => scrollToSection(e, "gallery")}>
+            QALEREYA
           </a>
           <a href="#faq" onClick={(e) => scrollToSection(e, "faq")}>
             FAQ
@@ -394,6 +517,35 @@ function App() {
         </div>
       </section>
 
+      <section id="gallery" className="content-section content-section-light">
+        <div className="content-section-inner">
+          <span className="section-eyebrow reveal">QALEREYA</span>
+          <h2 className="reveal">KEÇMİŞ TƏDBİRLƏRDƏN</h2>
+          <p className="gallery-intro reveal">
+            Əvvəlki tədbirlərimizdən anlar — enerji, networking və səhnə.
+          </p>
+          <div className="gallery-grid">
+            {GALLERY.map((image, i) => (
+              <GalleryTile
+                key={image.src}
+                image={image}
+                index={i}
+                onOpen={openLightbox}
+              />
+            ))}
+          </div>
+          <a
+            href="https://www.instagram.com/stage17.az/?hl=tr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="gallery-ig-link reveal"
+          >
+            <FaInstagram />
+            Daha çox şəkil üçün Instagram-da izlə
+          </a>
+        </div>
+      </section>
+
       <section id="faq" className="content-section content-section-dark">
         <div className="content-section-inner">
           <span className="section-eyebrow reveal">FAQ</span>
@@ -460,6 +612,14 @@ function App() {
           &copy; 2026 DevJoint - Bütün hüquqlar qorunur.
         </p>
       </footer>
+
+      <Lightbox
+        images={GALLERY}
+        index={lightboxIndex}
+        onClose={closeLightbox}
+        onPrev={prevImage}
+        onNext={nextImage}
+      />
       <Analytics />
     </div>
   );
