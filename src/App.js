@@ -1,43 +1,129 @@
-import React, { useState, useEffect, useRef } from "react";
-import { FaInstagram, FaLinkedin } from "react-icons/fa";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  FaInstagram,
+  FaLinkedin,
+  FaUsers,
+  FaLightbulb,
+  FaMicrophoneAlt,
+  FaChevronDown,
+  FaArrowRight,
+} from "react-icons/fa";
 import "./App.css";
 import { Analytics } from "@vercel/analytics/react";
+
+/* --- Animated count-up number, triggers once when scrolled into view --- */
+function StatCounter({ target, suffix = "", label }) {
+  const [value, setValue] = useState(0);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReduced || typeof IntersectionObserver === "undefined") {
+      setValue(target);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+
+          const duration = 1600;
+          const start = performance.now();
+          const tick = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(Math.round(target * eased));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <div className="stat-card reveal" ref={ref}>
+      <div className="stat-number">
+        {value}
+        <span className="stat-suffix">{suffix}</span>
+      </div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+}
+
+/* --- Accordion FAQ item --- */
+function FaqItem({ question, answer, isOpen, onToggle }) {
+  return (
+    <div className={`faq-item ${isOpen ? "open" : ""}`}>
+      <button
+        type="button"
+        className="faq-question"
+        aria-expanded={isOpen}
+        onClick={onToggle}
+      >
+        <span>{question}</span>
+        <FaChevronDown className="faq-chevron" />
+      </button>
+      <div className="faq-answer">
+        <p>{answer}</p>
+      </div>
+    </div>
+  );
+}
+
+const FAQS = [
+  {
+    q: "Stage17 nədir?",
+    a: "Stage17 — gənclərin şəxsi və peşəkar inkişafını dəstəkləyən canlı çıxış və müzakirə platformasıdır. Burada sahəsinin peşəkarları ilə bir araya gəlir, networking qurur və öz səhnə şansını qazanırsan.",
+  },
+  {
+    q: "Tədbirə necə qeydiyyatdan keçə bilərəm?",
+    a: "Yuxarıdakı “Üzvlük Qeydiyyatı” və “İnkişaf Forum Qeydiyyatı” düymələri vasitəsilə onlayn formu doldurmaqla bir neçə dəqiqəyə qeydiyyatdan keçə bilərsən.",
+  },
+  {
+    q: "Kimlər iştirak edə bilər?",
+    a: "İnkişafa meyilli bütün gənclər — tələbələr, yeni başlayanlar və öz sahəsində irəliləmək istəyənlər. Təcrübə tələb olunmur, sadəcə iştirak etmək istəyin kifayətdir.",
+  },
+  {
+    q: "İştirakdan nə əldə edəcəm?",
+    a: "Real təcrübələr, güclü networking mühiti, fərqli baxış bucaqları və gələcəkdə özünün də səhnədə çıxış edə biləcəyin bir platforma.",
+  },
+];
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
   const heroRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 820) {
-        setIsMenuOpen(false);
-      }
+      if (window.innerWidth > 820) setIsMenuOpen(false);
     };
-
     window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /* Scroll reveal */
   useEffect(() => {
     const revealEls = document.querySelectorAll(".reveal");
 
@@ -58,20 +144,19 @@ function App() {
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
     );
 
     revealEls.forEach((el) => observer.observe(el));
-
     return () => observer.disconnect();
   }, []);
 
+  /* Pointer-reactive hero glow */
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return undefined;
     }
-
     let frame = 0;
     const handlePointer = (e) => {
       cancelAnimationFrame(frame);
@@ -82,7 +167,6 @@ function App() {
         hero.style.setProperty("--pointer-y", y.toFixed(3));
       });
     };
-
     window.addEventListener("pointermove", handlePointer);
     return () => {
       window.removeEventListener("pointermove", handlePointer);
@@ -90,17 +174,14 @@ function App() {
     };
   }, []);
 
-  const scrollToSection = (e, targetId) => {
+  const scrollToSection = useCallback((e, targetId) => {
     e.preventDefault();
     const target = document.getElementById(targetId);
     if (target) {
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
       setIsMenuOpen(false);
     }
-  };
+  }, []);
 
   return (
     <div className="App" id="top">
@@ -130,149 +211,208 @@ function App() {
             HAQQIMIZDA
           </a>
           <a href="#speakers" onClick={(e) => scrollToSection(e, "speakers")}>
-            SPİKERLƏR VƏ KOMANDA
+            KOMANDA
+          </a>
+          <a href="#faq" onClick={(e) => scrollToSection(e, "faq")}>
+            FAQ
           </a>
           <a href="#partners" onClick={(e) => scrollToSection(e, "partners")}>
             TƏRƏFDAŞLAR
+          </a>
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLScTNoA7VjGEu5KfIumDuwqDT4HU5VK3EdxZdXgkpesp1YWOmQ/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-cta"
+          >
+            QEYDİYYAT
           </a>
         </div>
       </nav>
 
       <header className="hero" ref={heroRef}>
-        <div className="hero-orbs" aria-hidden="true">
+        <div className="hero-bg" aria-hidden="true">
+          <span className="hero-grid" />
           <span className="hero-orb hero-orb-1" />
           <span className="hero-orb hero-orb-2" />
           <span className="hero-orb hero-orb-3" />
         </div>
+
         <div className="hero-content">
-          <h1 className="animate-slide-up">GƏNCLƏRİN İNKİŞAF PLATFORMASI</h1>
-          <p className="animate-slide-up delay-1">
+          <span className="hero-badge animate-slide-up">
+            <span className="hero-badge-dot" />
+            Gənclərin inkişaf forumu
+          </span>
+          <h1 className="hero-title">GƏNCLƏRİN İNKİŞAF PLATFORMASI</h1>
+          <p className="animate-slide-up delay-2">
             Potensialını kəşf et, şəbəkə qur və gələcəyə addım at.
           </p>
 
-          <div className="hero-cta animate-slide-up delay-2">
+          <div className="hero-cta animate-slide-up delay-3">
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLScTNoA7VjGEu5KfIumDuwqDT4HU5VK3EdxZdXgkpesp1YWOmQ/viewform"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary cta-button"
             >
-              <span className="cta-icon">👤</span>
               ÜZVLÜK QEYDİYYATI
-            </a>
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSeLyhjK85OBhkkXbZEp7zMRfGzsFMP98uFn0hUohs88C2-gfA/viewform"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary cta-button"
-            >
-              <span className="cta-icon">📷</span>
-              Visual Creator Proqramı
+              <FaArrowRight className="btn-arrow" />
             </a>
             <a
               href="https://forms.gle/4dM9FWwncHNx5Np36"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-primary cta-button"
+              className="btn btn-ghost cta-button"
             >
-              <span className="cta-icon">📚</span>
               "İnkişaf" Forum Qeydiyyatı
             </a>
           </div>
+
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSeLyhjK85OBhkkXbZEp7zMRfGzsFMP98uFn0hUohs88C2-gfA/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hero-secondary-link animate-slide-up delay-3"
+          >
+            📷 Visual Creator Proqramı üçün müraciət et
+          </a>
         </div>
+
+        <a
+          href="#stats"
+          className="scroll-indicator"
+          aria-label="Aşağı sürüşdür"
+          onClick={(e) => scrollToSection(e, "stats")}
+        >
+          <span className="scroll-mouse">
+            <span className="scroll-wheel" />
+          </span>
+        </a>
       </header>
+
+      <section id="stats" className="stats-section">
+        <div className="stats-grid">
+          <StatCounter target={500} suffix="+" label="İştirakçı" />
+          <StatCounter target={20} suffix="+" label="Spiker & Mentor" />
+          <StatCounter target={15} suffix="+" label="Panel & Çıxış" />
+          <StatCounter target={10} suffix="+" label="Tərəfdaş" />
+        </div>
+      </section>
 
       <section id="about" className="content-section content-section-dark">
         <div className="content-section-inner">
+          <span className="section-eyebrow reveal">HAQQIMIZDA</span>
           <h2 className="reveal">BİZ KİMİK?</h2>
           <div className="about-text-block">
             <p className="reveal">
               Stage17 — sadəcə arxa sıralarda əyləşib kimisə dinləyəcəyin
-              sıradan bir tədbir deyil.
-            </p>
-            <p className="reveal">
-              Biz, gənclərin şəxsi və peşəkar inkişafını dəstəkləyən, fərqli
-              baxış bucaqlarının kəsişdiyi canlı bir çıxış və müzakirə
-              platformasıyıq.
+              sıradan bir tədbir deyil. Biz, gənclərin şəxsi və peşəkar
+              inkişafını dəstəkləyən, fərqli baxış bucaqlarının kəsişdiyi canlı
+              bir çıxış və müzakirə platformasıyıq.
             </p>
             <p className="reveal">
               Əsas məqsədimiz sənin yalnız dinləyici kimi qalmağını deyil, öz
               fikirlərini cəsarətlə ifadə edən, səhnədə parlayan və cəmiyyətdə
               fərqlənən birinə çevrilməyini təmin etməkdir.
             </p>
-            <ul>
-              <li className="reveal" style={{ "--reveal-delay": "0.05s" }}>
-                <strong>Real Təcrübələr və Fərqli Vizyon:</strong> Sahəsinin
-                peşəkarları ilə bir araya gəlib, mühazirələrdən kənar,
+          </div>
+
+          <div className="feature-grid">
+            <article
+              className="feature-card reveal"
+              style={{ "--reveal-delay": "0.05s" }}
+            >
+              <div className="feature-icon">
+                <FaLightbulb />
+              </div>
+              <h3>Real Təcrübələr və Fərqli Vizyon</h3>
+              <p>
+                Sahəsinin peşəkarları ilə bir araya gəlib, mühazirələrdən kənar,
                 dünyagörüşünü genişləndirəcək interaktiv panellər və çıxışlar.
-              </li>
-              <li className="reveal" style={{ "--reveal-delay": "0.18s" }}>
-                <strong>Güclü Networkinq Mühiti:</strong> Sənin kimi inkişafa
-                meyilli gənclərlə əhatə olunacaq, bəlkə də gələcək layihələrin
-                üçün ən yaxşı komanda yoldaşlarını məhz burada tapacaqsan.
-              </li>
-              <li className="reveal" style={{ "--reveal-delay": "0.31s" }}>
-                <strong>Səhnə Şansı:</strong> Stage17 sadəcə izləmək üçün deyil;
-                burada qazandığın bilik və əlaqələrlə gələcəkdə o səhnədə çıxış
-                edən sən özün ola bilərsən.
-              </li>
-            </ul>
+              </p>
+            </article>
+            <article
+              className="feature-card reveal"
+              style={{ "--reveal-delay": "0.18s" }}
+            >
+              <div className="feature-icon">
+                <FaUsers />
+              </div>
+              <h3>Güclü Networkinq Mühiti</h3>
+              <p>
+                Sənin kimi inkişafa meyilli gənclərlə əhatə olunacaq, bəlkə də
+                gələcək layihələrin üçün ən yaxşı komanda yoldaşlarını məhz
+                burada tapacaqsan.
+              </p>
+            </article>
+            <article
+              className="feature-card reveal"
+              style={{ "--reveal-delay": "0.31s" }}
+            >
+              <div className="feature-icon">
+                <FaMicrophoneAlt />
+              </div>
+              <h3>Səhnə Şansı</h3>
+              <p>
+                Stage17 sadəcə izləmək üçün deyil; burada qazandığın bilik və
+                əlaqələrlə gələcəkdə o səhnədə çıxış edən sən özün ola bilərsən.
+              </p>
+            </article>
           </div>
         </div>
       </section>
 
       <section id="speakers" className="content-section content-section-light">
         <div className="content-section-inner">
+          <span className="section-eyebrow reveal">KOMANDA</span>
           <h2 className="reveal">KOMANDA VƏ SPİKERLƏR</h2>
           <div className="grid-container">
-            <div className="card reveal" style={{ "--reveal-delay": "0.05s" }}>
-              <div className="card-image-wrap">
-                <img
-                  src="/yaqub.jpeg"
-                  alt="Yaqub Əmiraslanov"
-                  className="card-image"
-                  loading="lazy"
+            {[
+              { img: "/yaqub.jpeg", name: "Yaqub Əmiraslanov", role: "Təsisçi" },
+              { img: "/fatime.jpeg", name: "Fatimə Əliyeva", role: "Baş kordinator" },
+              { img: "/leman.jpeg", name: "Ləman Abdullayeva", role: "Event kordinator" },
+              { img: "/huseyn.png", name: "Hüseyn Hüseynov", role: "Web Developer" },
+            ].map((person, i) => (
+              <div
+                className="card reveal"
+                key={person.name}
+                style={{ "--reveal-delay": `${0.05 + i * 0.11}s` }}
+              >
+                <div className="card-image-wrap">
+                  <img
+                    src={person.img}
+                    alt={person.name}
+                    className="card-image"
+                    loading="lazy"
+                  />
+                </div>
+                <h3>{person.name}</h3>
+                <p>{person.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="content-section content-section-dark">
+        <div className="content-section-inner">
+          <span className="section-eyebrow reveal">FAQ</span>
+          <h2 className="reveal">TEZ-TEZ VERİLƏN SUALLAR</h2>
+          <div className="faq-list">
+            {FAQS.map((item, i) => (
+              <div
+                className="reveal"
+                key={item.q}
+                style={{ "--reveal-delay": `${i * 0.08}s` }}
+              >
+                <FaqItem
+                  question={item.q}
+                  answer={item.a}
+                  isOpen={openFaq === i}
+                  onToggle={() => setOpenFaq(openFaq === i ? -1 : i)}
                 />
               </div>
-              <h3>Yaqub Əmiraslanov</h3>
-              <p>Təsisçi</p>
-            </div>
-            <div className="card reveal" style={{ "--reveal-delay": "0.16s" }}>
-              <div className="card-image-wrap">
-                <img
-                  src="/fatime.jpeg"
-                  alt="Fatimə Əliyeva"
-                  className="card-image"
-                  loading="lazy"
-                />
-              </div>
-              <h3>Fatimə Əliyeva</h3>
-              <p>Baş kordinator</p>
-            </div>
-            <div className="card reveal" style={{ "--reveal-delay": "0.27s" }}>
-              <div className="card-image-wrap">
-                <img
-                  src="/leman.jpeg"
-                  alt="Ləman Abdullayeva"
-                  className="card-image"
-                  loading="lazy"
-                />
-              </div>
-              <h3>Ləman Abdullayeva</h3>
-              <p>Event kordinator</p>
-            </div>
-            <div className="card reveal" style={{ "--reveal-delay": "0.38s" }}>
-              <div className="card-image-wrap">
-                <img
-                  src="/huseyn.png"
-                  alt="Hüseyn Hüseynov"
-                  className="card-image"
-                  loading="lazy"
-                />
-              </div>
-              <h3>Hüseyn Hüseynov</h3>
-              <p>Web Developer</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -281,15 +421,15 @@ function App() {
         <div className="partners-footer-inner">
           <div className="partners-label reveal">TƏRƏFDAŞLAR</div>
           <div className="partners-grid">
-            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.05s" }}>
-              Mereza Parfum
-            </div>
-            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.15s" }}>
-              DevJoint
-            </div>
-            <div className="partner-logo reveal" style={{ "--reveal-delay": "0.25s" }}>
-              AZMİU
-            </div>
+            {["Mereza Parfum", "DevJoint", "AZMİU"].map((name, i) => (
+              <div
+                className="partner-logo reveal"
+                key={name}
+                style={{ "--reveal-delay": `${0.05 + i * 0.1}s` }}
+              >
+                {name}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -302,7 +442,7 @@ function App() {
               className="social-link instagram-link"
               aria-label="Instagram"
             >
-              <FaInstagram size={32} />
+              <FaInstagram size={22} />
             </a>
             <a
               href="https://www.linkedin.com/company/stage17/posts/?feedView=all"
@@ -311,7 +451,7 @@ function App() {
               className="social-link linkedin-link"
               aria-label="LinkedIn"
             >
-              <FaLinkedin size={32} />
+              <FaLinkedin size={22} />
             </a>
           </div>
         </div>
