@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   FaInstagram,
   FaLinkedin,
-  FaChevronDown,
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
