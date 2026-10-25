@@ -22,8 +22,8 @@ const LINKEDIN_URL =
 
 const NAV_LINKS = [
   { n: "01", label: "HAQQIMIZDA", id: "about" },
-  { n: "02", label: "KOMANDA", id: "speakers" },
-  { n: "03", label: "QALEREYA", id: "gallery" },
+  { n: "02", label: "QALEREYA", id: "gallery" },
+  { n: "03", label: "KOMANDA", id: "speakers" },
   { n: "04", label: "FAQ", id: "faq" },
   { n: "05", label: "TƏRƏFDAŞLAR", id: "partners" },
 ];
@@ -556,36 +556,12 @@ function App() {
         </div>
       </section>
 
-      {/* TEAM */}
-      <section id="speakers" className="section team">
-        <div className="section-wrap">
-          <span className="eyebrow eyebrow-dark reveal">
-            PƏRDƏ II · SƏHNƏ HEYƏTİ
-          </span>
-          <h2 className="section-title title-dark reveal">KOMANDA VƏ SPİKERLƏR</h2>
-          <ul className="team-list">
-            {TEAM.map((m, i) => (
-              <li
-                className="team-row reveal"
-                key={m.name}
-                style={{ "--reveal-delay": `${i * 0.08}s` }}
-              >
-                <span className="team-mono">{m.mono}</span>
-                <span className="team-role">{m.role}</span>
-                <span className="team-line" />
-                <span className="team-name">{m.name}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {/* GALLERY */}
       <section id="gallery" className="section gallery">
         <div className="section-wrap">
           <div className="gallery-head">
             <div>
-              <span className="eyebrow reveal">PƏRDƏ III · KEÇMİŞ TƏDBİRLƏRDƏN</span>
+              <span className="eyebrow reveal">PƏRDƏ II · KEÇMİŞ TƏDBİRLƏRDƏN</span>
               <h2 className="section-title reveal">QALEREYA</h2>
               <p className="gallery-intro reveal">
                 Əvvəlki tədbirlərimizdən anlar — enerji, networking və səhnə.
@@ -614,6 +590,30 @@ function App() {
             </div>
             <span className="film-perf film-perf-bottom" aria-hidden="true" />
           </div>
+        </div>
+      </section>
+
+      {/* TEAM */}
+      <section id="speakers" className="section team">
+        <div className="section-wrap">
+          <span className="eyebrow eyebrow-dark reveal">
+            PƏRDƏ III · SƏHNƏ HEYƏTİ
+          </span>
+          <h2 className="section-title title-dark reveal">KOMANDA VƏ SPİKERLƏR</h2>
+          <ul className="team-list">
+            {TEAM.map((m, i) => (
+              <li
+                className="team-row reveal"
+                key={m.name}
+                style={{ "--reveal-delay": `${i * 0.08}s` }}
+              >
+                <span className="team-mono">{m.mono}</span>
+                <span className="team-role">{m.role}</span>
+                <span className="team-line" />
+                <span className="team-name">{m.name}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
